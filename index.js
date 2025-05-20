@@ -28,6 +28,7 @@ async function run() {
     // await client.connect();
     const database = client.db("PlantsDB");
     const PlantsCollection = database.collection("plants");
+    const userCollection = database.collection('user');
 
 
     // Post API 
@@ -89,6 +90,17 @@ app.put('/plants/:id', async(req,res)=>{
     console.log(result)
 
 })
+
+// for Handling MY page API 
+app.get('/myplants', async (req, res) => {
+  const userEmail = req.query.email;
+  // if (!userEmail) {
+  //   return res.status(400).send({ message: 'User email is required' });
+  // }
+  const query = { userEmail: userEmail };
+  const result = await PlantsCollection.find(query).toArray();
+  res.send(result);
+});
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
