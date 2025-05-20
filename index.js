@@ -52,7 +52,7 @@ app.get('/plants/:id',async(req,res)=>{
 
 
 // update API 
-app.put('/update/:id', async(req,res)=>{
+app.put('/plants/:id', async(req,res)=>{
    const id = req.params.id;
   const query = {_id: new ObjectId(id)}
   const {
