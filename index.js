@@ -94,14 +94,18 @@ app.put('/plants/:id', async(req,res)=>{
 // for Handling MY page API 
 app.get('/myplants', async (req, res) => {
   const userEmail = req.query.email;
-  // if (!userEmail) {
-  //   return res.status(400).send({ message: 'User email is required' });
-  // }
   const query = { userEmail: userEmail };
   const result = await PlantsCollection.find(query).toArray();
   res.send(result);
 });
 
+// Deleted API 
+app.delete('/plants/:id', async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id) };
+  const result = await PlantsCollection.deleteOne(query);
+  res.send(result);
+});
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
