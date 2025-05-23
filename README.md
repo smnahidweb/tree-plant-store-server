@@ -46,10 +46,5 @@ The server is designed to support the Plant Tree Store frontend by handling plan
 
 ##  Notes
 
-This server powers the Plant Tree Store client. Possible future improvements include:
-- Role-based admin access
-- Rate-limiting and error logging
-- Multer integration for image uploads
 
----  
  **Thank you for supporting nature and code!**
