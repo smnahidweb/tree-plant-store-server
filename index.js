@@ -38,11 +38,7 @@ async function run() {
     })
 // get all  API 
 
-app.get('/plants',async(req,res)=>{
-      const result = await PlantsCollection.find().toArray();
-      res.send(result)
-    })
-// Get Specific App
+
 app.get('/plants/:id',async(req,res)=>{
     const id = req.params.id;
   const query = {_id: new ObjectId(id)}
@@ -95,6 +91,17 @@ app.get('/myplants', async (req, res) => {
   const userEmail = req.query.email;
   const query = { userEmail: userEmail };
   const result = await PlantsCollection.find(query).toArray();
+  res.send(result);
+});
+
+// sorting
+app.get('/plants', async (req, res) => {
+  const sortField = req.query.sortBy;
+  const sortOrder = req.query.order === 'desc' ? -1 : 1;
+
+  const sortOptions = sortField ? { [sortField]: sortOrder } : {};
+
+  const result = await PlantsCollection.find().sort(sortOptions).toArray();
   res.send(result);
 });
 
