@@ -1,5 +1,5 @@
-const express = require('express')
 require('dotenv').config()
+const express = require('express')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express()
 const cors = require('cors');
@@ -112,7 +112,7 @@ app.delete('/plants/:id', async (req, res) => {
   const result = await PlantsCollection.deleteOne(query);
   res.send(result);
 });
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
    

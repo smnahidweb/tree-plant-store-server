@@ -6,7 +6,7 @@ A RESTful backend API developed using Node.js and Express, connected to MongoDB 
 
 ##  Live API
 
-[View Live API]()
+[View Live API](https://tree-plant-store.web.app/)
 
 ---
 
@@ -22,6 +22,7 @@ The server is designed to support the Plant Tree Store frontend by handling plan
 -   Filtered data per logged-in user
 -  RESTful endpoints for frontend integration
 -  Hosted on Vercel with environment config via `.env`
+-   Sorting All Tree 
 
 ---
 
