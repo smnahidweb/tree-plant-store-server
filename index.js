@@ -1,109 +1,160 @@
-require('dotenv').config();
-const express = require('express');
+require('dotenv').config()
+const express = require('express')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const app = express()
 const cors = require('cors');
+const port = 3000
 
-const app = express();
-const port = process.env.PORT || 3000;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json())
+
+
 
 const uri = `mongodb+srv://tree-plant-store:${process.env.Plant_Store_DB}@cluster0.hq0xigy.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+
 
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-  },
+  }
 });
-
-
 
 async function run() {
   try {
-    await client.connect();
-
+   
     const database = client.db("PlantsDB");
-    PlantsCollection = database.collection("plants");
-    SubscribersCollection = database.collection('newsletter');
+    const PlantsCollection = database.collection("plants");
+    const NewsletterCollection = database.collection('newsletter');
 
-    console.log("✅ MongoDB connected");
 
-    // POST newsletter subscription
- app.post('/newsletter', async (req, res) => {
-  const { name, email } = req.body;
+    // Post API 
+    app.post('/plants',async(req,res)=>{
+        const userProfile  = req.body;
+      const result = await PlantsCollection.insertOne(userProfile)
+      res.send(result)
+    })
 
-  const result = await subscribedPerson.insertOne({
-    name,
-    email,
-    subscribedAt: new Date(),
-  });
+   app.post('/newsletter', async (req, res) => {
+      const newsletterData = req.body;
+      const result = await NewsletterCollection.insertOne(newsletterData);
+      res.send(result);
+    });
 
+    // GET single newsletter by ID
+    app.get('/newsletter/:id', async (req, res) => {
+      const id = req.params.id;
+      const result = await NewsletterCollection.findOne({ _id: new ObjectId(id) });
+      res.send(result);
+    });
+
+    app.get('/newsletter', async (req, res) => {
+  const result = await NewsletterCollection.find().toArray();
   res.send(result);
 });
 
-    // GET newsletter subscriber by ID
-    // app.get('/newsletter/:id', async (req, res) => {
-    //   const id = req.params.id;
 
-    //   try {
-    //     const subscriber = await SubscribersCollection.findOne({ _id: new ObjectId(id) });
-    //     if (!subscriber) {
-    //       return res.status(404).json({ success: false, message: 'Subscriber not found' });
-    //     }
-    //     res.status(200).json({ success: true, subscriber });
-    //   } catch (err) {
-    //     res.status(500).json({ success: false, message: 'Invalid ID or server error', error: err.message });
-    //   }
-    // });
+// get all  API 
 
-    // GET all newsletter subscribers
-    app.get('/newsletter', async (req, res) => {
-    
-       const subscribers = await SubscribersCollection.find({}).toArray();
-       res.send(subscribers)
-    
-    });
 
-    // PUT update watering status of plant
-    app.put('/plants/:id/status', async (req, res) => {
-      const id = req.params.id;
-      const { status } = req.body;
+app.get('/plants/:id',async(req,res)=>{
+    const id = req.params.id;
+  const query = {_id: new ObjectId(id)}
+  const result = await PlantsCollection.findOne(query)
+  res.send(result);
+})
 
-      if (!['pending', 'successful'].includes(status)) {
-        return res.status(400).json({ error: 'Invalid status' });
+
+// update API 
+app.put('/plants/:id', async(req,res)=>{
+   const id = req.params.id;
+  const query = {_id: new ObjectId(id)}
+  const {
+    image,
+    name,
+    category,
+    description,
+    careLevel,
+    wateringFrequency,
+    lastWatered,
+    nextWatering,
+    healthStatus,
+    userEmail,
+    userName,
+  } = req.body;
+  
+    const updateDoc = {
+      $set: {
+        image,
+    name,
+    category,
+    description,
+    careLevel,
+    wateringFrequency,
+    lastWatered,
+    nextWatering,
+    healthStatus,
+    userEmail,
+    userName,
       }
+    }
+    const result = await PlantsCollection.updateOne(query,updateDoc)
+    res.send(result)
+    console.log(result)
 
-      try {
-        const query = { _id: new ObjectId(id) };
-        const updateDoc = { $set: { wateringStatus: status } };
-        const result = await PlantsCollection.updateOne(query, updateDoc);
+})
 
-        if (result.matchedCount === 0) {
-          return res.status(404).json({ error: 'Plant not found' });
-        }
+// for Handling MY page API 
+app.get('/myplants', async (req, res) => {
+  const userEmail = req.query.email;
+  const query = { userEmail: userEmail };
+  const result = await PlantsCollection.find(query).toArray();
+  res.send(result);
+});
 
-        res.json({ success: true, message: 'Watering status updated' });
-      } catch (err) {
-        res.status(500).json({ error: 'Failed to update watering status', details: err.message });
-      }
-    });
+// sorting
+app.get('/plants', async (req, res) => {
+  try {
+    const sortField = req.query.sortBy || 'nextWatering'; // default field
+    const sortOrder = req.query.order === 'desc' ? -1 : 1;
 
-    // Other plant APIs here (create, get by id, update, delete, etc.) can remain the same but remove duplicate PUT
+    const sortOptions = { [sortField]: sortOrder };
 
-  } catch (err) {
-    console.error(err);
+    const result = await PlantsCollection.find().sort(sortOptions).toArray();
+    res.send(result);
+  } catch (error) {
+    console.error('Error fetching sorted plants:', error);
+    res.status(500).send({ message: 'Failed to fetch sorted plants' });
+  }
+});
+
+
+// Deleted API 
+app.delete('/plants/:id', async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id) };
+  const result = await PlantsCollection.deleteOne(query);
+  res.send(result);
+});
+    // await client.db("admin").command({ ping: 1 });
+    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+  } finally {
+   
   }
 }
-
 run().catch(console.dir);
 
+
+
+
 app.get('/', (req, res) => {
-  res.send('Plant Tree Store server');
-});
+  res.send('Plant Tree Store server')
+})
 
 app.listen(port, () => {
-  console.log(`Plant Tree store server listening on port ${port}`);
-});
+  console.log(`Plant Tree store server is listening on port ${port}`)
+})
+
+
